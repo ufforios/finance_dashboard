@@ -232,11 +232,11 @@ class GoogleSheetsService {
         };
 
         await sheet.addRow({
-            'ID': newAccount.id,
-            'Nombre': newAccount.name,
-            'Tipo': newAccount.type,
-            'Balance Inicial': newAccount.initialBalance || 0,
-            'Balance Actual': newAccount.balance,
+            'ID': String(newAccount.id),
+            'Nombre': String(newAccount.name),
+            'Tipo': String(newAccount.type),
+            'Balance Inicial': Number(newAccount.initialBalance || 0),
+            'Balance Actual': Number(newAccount.balance),
         });
 
         return newAccount;
