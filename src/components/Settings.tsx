@@ -18,6 +18,7 @@ export default function Settings() {
     const [accountName, setAccountName] = useState('');
     const [accountType, setAccountType] = useState(ACCOUNT_TYPES.BANK);
     const [initialBalance, setInitialBalance] = useState('');
+    const [creditLimit, setCreditLimit] = useState('');
     const [categoryName, setCategoryName] = useState('');
     const [categoryType, setCategoryType] = useState<'income' | 'expense'>('income');
 
@@ -42,6 +43,7 @@ export default function Settings() {
         setAccountName('');
         setAccountType(ACCOUNT_TYPES.BANK);
         setInitialBalance('0');
+        setCreditLimit('');
         setShowModal(true);
     };
 
@@ -51,6 +53,7 @@ export default function Settings() {
         setAccountName(account.name);
         setAccountType(account.type);
         setInitialBalance(account.initialBalance?.toString() || '0');
+        setCreditLimit(account.creditLimit?.toString() || '');
         setShowModal(true);
     };
 
@@ -100,13 +103,15 @@ export default function Settings() {
                 if (editingItem) {
                     await dataService.updateAccount(editingItem.id, {
                         name: accountName,
-                        type: accountType
+                        type: accountType,
+                        creditLimit: accountType === ACCOUNT_TYPES.CREDIT_CARD && creditLimit ? parseFloat(creditLimit) : undefined
                     });
                 } else {
                     await dataService.addAccount({
                         name: accountName,
                         type: accountType,
-                        initialBalance: parseFloat(initialBalance) || 0
+                        initialBalance: parseFloat(initialBalance) || 0,
+                        creditLimit: accountType === ACCOUNT_TYPES.CREDIT_CARD && creditLimit ? parseFloat(creditLimit) : undefined
                     });
                 }
             } else {
@@ -166,6 +171,7 @@ export default function Settings() {
                                         <div className={styles.itemName}>{account.name}</div>
                                         <div className={styles.itemDetails}>
                                             {account.type} • Balance: ${account.balance.toLocaleString()}
+                                            {account.creditLimit && ` • Límite: $${account.creditLimit.toLocaleString()}`}
                                         </div>
                                     </div>
                                     <div className={styles.itemActions}>
@@ -318,6 +324,19 @@ export default function Settings() {
                                                 value={initialBalance}
                                                 onChange={(e) => setInitialBalance(e.target.value)}
                                                 step="0.01"
+                                            />
+                                        </div>
+                                    )}
+                                    {accountType === ACCOUNT_TYPES.CREDIT_CARD && (
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.label}>Límite de Crédito</label>
+                                            <input
+                                                type="number"
+                                                className={styles.input}
+                                                value={creditLimit}
+                                                onChange={(e) => setCreditLimit(e.target.value)}
+                                                step="0.01"
+                                                placeholder="Opcional"
                                             />
                                         </div>
                                     )}

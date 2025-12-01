@@ -53,6 +53,7 @@ export interface Account {
     type: string;
     balance: number;
     initialBalance?: number;
+    creditLimit?: number; // Para tarjetas de crédito
 }
 
 export interface Category {

@@ -64,8 +64,8 @@ Asegúrate de que tu Google Sheet tenga estas pestañas con estas columnas (la p
 |----|-------|------|-----------|-------|--------|----------------|---------|
 
 **Pestaña "Cuentas":**
-| ID | Nombre | Tipo | Balance Inicial | Balance Actual |
-|----|--------|------|-----------------|----------------|
+| ID | Nombre | Tipo | Balance Inicial | Balance Actual | Límite de Crédito |
+|----|--------|------|-----------------|----------------|-------------------|
 
 **Pestaña "Categorías_Ingresos":**
 | Categoría |

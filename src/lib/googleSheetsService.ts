@@ -214,6 +214,7 @@ class GoogleSheetsService {
             type: row.get('Tipo') || '',
             initialBalance: parseFloat(row.get('Balance Inicial') || '0'),
             balance: parseFloat(row.get('Balance Actual') || '0'),
+            creditLimit: row.get('Límite de Crédito') ? parseFloat(row.get('Límite de Crédito')) : undefined,
         }));
     }
 
@@ -237,6 +238,7 @@ class GoogleSheetsService {
             'Tipo': String(newAccount.type),
             'Balance Inicial': Number(newAccount.initialBalance || 0),
             'Balance Actual': Number(newAccount.balance),
+            'Límite de Crédito': newAccount.creditLimit ? Number(newAccount.creditLimit) : '',
         });
 
         return newAccount;
@@ -255,6 +257,7 @@ class GoogleSheetsService {
         if (updates.type !== undefined) row.set('Tipo', updates.type);
         if (updates.initialBalance !== undefined) row.set('Balance Inicial', updates.initialBalance);
         if (updates.balance !== undefined) row.set('Balance Actual', updates.balance);
+        if (updates.creditLimit !== undefined) row.set('Límite de Crédito', updates.creditLimit || '');
 
         await row.save();
 
@@ -264,6 +267,7 @@ class GoogleSheetsService {
             type: row.get('Tipo') || '',
             initialBalance: parseFloat(row.get('Balance Inicial') || '0'),
             balance: parseFloat(row.get('Balance Actual') || '0'),
+            creditLimit: row.get('Límite de Crédito') ? parseFloat(row.get('Límite de Crédito')) : undefined,
         };
     }
 
