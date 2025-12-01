@@ -225,6 +225,9 @@ class GoogleSheetsService {
     // ==================== CUENTAS ====================
 
     async getAccounts(): Promise<Account[]> {
+        // Recalcular balances antes de retornar las cuentas
+        await this.recalculateAllBalances();
+
         const sheet = await this.getSheet('Cuentas');
         const rows = await sheet.getRows();
 
@@ -458,6 +461,90 @@ class GoogleSheetsService {
     }
 
     // ==================== MÉTODOS AUXILIARES ====================
+
+    /**
+     * Recalcula los balances de todas las cuentas basándose en las transacciones
+     * Esto es necesario cuando las transacciones se agregan manualmente al Google Sheet
+     */
+    private async recalculateAllBalances() {
+        console.log('🔄 Recalculando balances de todas las cuentas...');
+
+        const sheet = await this.getSheet('Cuentas');
+        const rows = await sheet.getRows();
+        const transactions = await this.getTransactions();
+
+        // Crear mapas de balances calculados (por ID y por Nombre)
+        const calculatedBalances: Record<string, number> = {};
+        const accountIdByName: Record<string, string> = {};
+
+        // Inicializar con balances iniciales
+        for (const row of rows) {
+            const accountId = row.get('ID');
+            const accountName = row.get('Nombre');
+            const initialBalance = this.parseNumber(row.get('Balance Inicial'));
+
+            calculatedBalances[accountId] = initialBalance;
+            accountIdByName[accountName] = accountId;
+
+            console.log(`   Cuenta ${accountName} (ID: ${accountId}): Balance inicial = ${initialBalance}`);
+        }
+
+        // Procesar todas las transacciones
+        for (const transaction of transactions) {
+            // Intentar encontrar la cuenta por ID o por Nombre
+            let accountId = transaction.account;
+
+            // Si no existe el ID directamente, buscar por nombre
+            if (calculatedBalances[accountId] === undefined && accountIdByName[accountId]) {
+                accountId = accountIdByName[accountId];
+            }
+
+            if (calculatedBalances[accountId] === undefined) {
+                console.warn(`⚠️  Transacción con cuenta desconocida: ${transaction.account}`);
+                continue;
+            }
+
+            if (transaction.type === 'income') {
+                calculatedBalances[accountId] += transaction.amount;
+            } else if (transaction.type === 'expense') {
+                calculatedBalances[accountId] -= transaction.amount;
+            } else if (transaction.type === 'transfer' && transaction.toAccount) {
+                calculatedBalances[accountId] -= transaction.amount;
+
+                // También buscar cuenta destino por ID o nombre
+                let toAccountId = transaction.toAccount;
+                if (calculatedBalances[toAccountId] === undefined && accountIdByName[toAccountId]) {
+                    toAccountId = accountIdByName[toAccountId];
+                }
+
+                if (calculatedBalances[toAccountId] !== undefined) {
+                    calculatedBalances[toAccountId] += transaction.amount;
+                }
+            }
+        }
+
+        // Actualizar los balances en Google Sheets
+        for (const row of rows) {
+            const accountId = row.get('ID');
+            const accountName = row.get('Nombre');
+            const newBalance = calculatedBalances[accountId];
+
+            if (newBalance !== undefined) {
+                const balanceColumn = row.get('Balance Actual') !== undefined ? 'Balance Actual' : 'Balance';
+                const currentBalance = this.parseNumber(row.get(balanceColumn));
+
+                if (currentBalance !== newBalance) {
+                    console.log(`   ✏️  Actualizando ${accountName}: ${currentBalance} → ${newBalance}`);
+                    row.set(balanceColumn, newBalance);
+                    await row.save();
+                } else {
+                    console.log(`   ✓ ${accountName}: Balance correcto (${newBalance})`);
+                }
+            }
+        }
+
+        console.log('✅ Recálculo de balances completado');
+    }
 
     private async updateAccountBalances(transaction: Transaction) {
         const sheet = await this.getSheet('Cuentas');
