@@ -72,6 +72,26 @@ class GoogleSheetsService {
         return sheet;
     }
 
+    private parseNumber(value: string | number | undefined | null): number {
+        if (value === undefined || value === null || value === '') return 0;
+        if (typeof value === 'number') return value;
+
+        // Remove currency symbols and other non-numeric chars (except . , and -)
+        // This handles "$ 1.234,56" (European/Latin) and "$ 1,234.56" (US)
+        let clean = value.toString().replace(/[^0-9.,-]/g, '').trim();
+
+        // Check format: if last punctuation is comma, it's likely decimal separator (1.234,56)
+        if (clean.indexOf(',') > clean.indexOf('.') && clean.includes(',')) {
+            clean = clean.replace(/\./g, '').replace(',', '.');
+        } else {
+            // Otherwise assume US format (1,234.56) -> remove commas
+            clean = clean.replace(/,/g, '');
+        }
+
+        const result = parseFloat(clean);
+        return isNaN(result) ? 0 : result;
+    }
+
     // ==================== TRANSACCIONES ====================
 
     async getTransactions(): Promise<Transaction[]> {
@@ -83,7 +103,7 @@ class GoogleSheetsService {
             date: row.get('Fecha') || '',
             type: row.get('Tipo') as 'income' | 'expense' | 'transfer',
             category: row.get('Categoría') || '',
-            amount: parseFloat(row.get('Monto') || '0'),
+            amount: this.parseNumber(row.get('Monto')),
             account: row.get('Cuenta') || '',
             toAccount: row.get('Cuenta Destino') || undefined,
             detail: row.get('Detalle') || undefined,
@@ -138,7 +158,7 @@ class GoogleSheetsService {
             date: row.get('Fecha') || '',
             type: row.get('Tipo') as 'income' | 'expense' | 'transfer',
             category: row.get('Categoría') || '',
-            amount: parseFloat(row.get('Monto') || '0'),
+            amount: this.parseNumber(row.get('Monto')),
             account: row.get('Cuenta') || '',
             toAccount: row.get('Cuenta Destino') || undefined,
             detail: row.get('Detalle') || undefined,
@@ -163,7 +183,7 @@ class GoogleSheetsService {
             date: row.get('Fecha') || '',
             type: row.get('Tipo') as 'income' | 'expense' | 'transfer',
             category: row.get('Categoría') || '',
-            amount: parseFloat(row.get('Monto') || '0'),
+            amount: this.parseNumber(row.get('Monto')),
             account: row.get('Cuenta') || '',
             toAccount: row.get('Cuenta Destino') || undefined,
             detail: row.get('Detalle') || undefined,
@@ -190,7 +210,7 @@ class GoogleSheetsService {
             date: row.get('Fecha') || '',
             type: row.get('Tipo') as 'income' | 'expense' | 'transfer',
             category: row.get('Categoría') || '',
-            amount: parseFloat(row.get('Monto') || '0'),
+            amount: this.parseNumber(row.get('Monto')),
             account: row.get('Cuenta') || '',
             toAccount: row.get('Cuenta Destino') || undefined,
             detail: row.get('Detalle') || undefined,
@@ -208,14 +228,17 @@ class GoogleSheetsService {
         const sheet = await this.getSheet('Cuentas');
         const rows = await sheet.getRows();
 
-        return rows.map((row) => ({
-            id: row.get('ID') || '',
-            name: row.get('Nombre') || '',
-            type: row.get('Tipo') || '',
-            initialBalance: parseFloat(row.get('Balance Inicial') || '0'),
-            balance: parseFloat(row.get('Balance Actual') || '0'),
-            creditLimit: row.get('Límite de Crédito') ? parseFloat(row.get('Límite de Crédito')) : undefined,
-        }));
+        return rows.map((row) => {
+            const balanceVal = row.get('Balance Actual') !== undefined ? row.get('Balance Actual') : row.get('Balance');
+            return {
+                id: row.get('ID') || '',
+                name: row.get('Nombre') || '',
+                type: row.get('Tipo') || '',
+                initialBalance: this.parseNumber(row.get('Balance Inicial')),
+                balance: this.parseNumber(balanceVal),
+                creditLimit: row.get('Límite de Crédito') ? this.parseNumber(row.get('Límite de Crédito')) : undefined,
+            };
+        });
     }
 
     async getAccount(id: string): Promise<Account | null> {
@@ -232,12 +255,16 @@ class GoogleSheetsService {
             balance: account.initialBalance || 0,
         };
 
+        // Determine balance column name from headers
+        await sheet.loadHeaderRow();
+        const balanceKey = sheet.headerValues.includes('Balance Actual') ? 'Balance Actual' : 'Balance';
+
         await sheet.addRow({
             'ID': String(newAccount.id),
             'Nombre': String(newAccount.name),
             'Tipo': String(newAccount.type),
             'Balance Inicial': Number(newAccount.initialBalance || 0),
-            'Balance Actual': Number(newAccount.balance),
+            [balanceKey]: Number(newAccount.balance),
             'Límite de Crédito': newAccount.creditLimit ? Number(newAccount.creditLimit) : '',
         });
 
@@ -256,7 +283,10 @@ class GoogleSheetsService {
         if (updates.name !== undefined) row.set('Nombre', updates.name);
         if (updates.type !== undefined) row.set('Tipo', updates.type);
         if (updates.initialBalance !== undefined) row.set('Balance Inicial', updates.initialBalance);
-        if (updates.balance !== undefined) row.set('Balance Actual', updates.balance);
+
+        const balanceColumn = row.get('Balance Actual') !== undefined ? 'Balance Actual' : 'Balance';
+        if (updates.balance !== undefined) row.set(balanceColumn, updates.balance);
+
         if (updates.creditLimit !== undefined) row.set('Límite de Crédito', updates.creditLimit || '');
 
         await row.save();
@@ -265,9 +295,9 @@ class GoogleSheetsService {
             id: row.get('ID') || '',
             name: row.get('Nombre') || '',
             type: row.get('Tipo') || '',
-            initialBalance: parseFloat(row.get('Balance Inicial') || '0'),
-            balance: parseFloat(row.get('Balance Actual') || '0'),
-            creditLimit: row.get('Límite de Crédito') ? parseFloat(row.get('Límite de Crédito')) : undefined,
+            initialBalance: this.parseNumber(row.get('Balance Inicial')),
+            balance: this.parseNumber(row.get('Balance Actual')),
+            creditLimit: row.get('Límite de Crédito') ? this.parseNumber(row.get('Límite de Crédito')) : undefined,
         };
     }
 
@@ -434,9 +464,17 @@ class GoogleSheetsService {
         const rows = await sheet.getRows();
 
         const accountRow = rows.find(row => row.get('ID') === transaction.account);
-        if (!accountRow) return;
+        if (!accountRow) {
+            console.error(`❌ updateAccountBalances: Cuenta ${transaction.account} no encontrada`);
+            return;
+        }
 
-        let currentBalance = parseFloat(accountRow.get('Balance Actual') || '0');
+        // Determine which balance column exists (fallback to 'Balance' if 'Balance Actual' not found)
+        const balanceColumn = accountRow.get('Balance Actual') !== undefined ? 'Balance Actual' : 'Balance';
+        let currentBalance = this.parseNumber(accountRow.get(balanceColumn));
+
+        console.log(`🔄 Actualizando balance cuenta ${accountRow.get('Nombre')} (${transaction.account})`);
+        console.log(`   Balance actual: ${currentBalance}, Monto transacción: ${transaction.amount}, Tipo: ${transaction.type}`);
 
         if (transaction.type === 'income') {
             currentBalance += transaction.amount;
@@ -445,16 +483,22 @@ class GoogleSheetsService {
         } else if (transaction.type === 'transfer' && transaction.toAccount) {
             currentBalance -= transaction.amount;
 
-            // Actualizar cuenta destino
+            // Update destination account
             const toAccountRow = rows.find(row => row.get('ID') === transaction.toAccount);
             if (toAccountRow) {
-                const toBalance = parseFloat(toAccountRow.get('Balance Actual') || '0');
-                toAccountRow.set('Balance Actual', toBalance + transaction.amount);
+                const destBalanceColumn = toAccountRow.get('Balance Actual') !== undefined ? 'Balance Actual' : 'Balance';
+                const toBalance = this.parseNumber(toAccountRow.get(destBalanceColumn));
+                const newToBalance = toBalance + transaction.amount;
+
+                console.log(`   Cuenta destino ${toAccountRow.get('Nombre')}: ${toBalance} -> ${newToBalance}`);
+
+                toAccountRow.set(destBalanceColumn, newToBalance);
                 await toAccountRow.save();
             }
         }
 
-        accountRow.set('Balance Actual', currentBalance);
+        console.log(`   Nuevo balance origen: ${currentBalance}`);
+        accountRow.set(balanceColumn, currentBalance);
         await accountRow.save();
     }
 
@@ -465,7 +509,9 @@ class GoogleSheetsService {
         const accountRow = rows.find(row => row.get('ID') === transaction.account);
         if (!accountRow) return;
 
-        let currentBalance = parseFloat(accountRow.get('Balance Actual') || '0');
+        // Determine balance column (fallback to 'Balance')
+        const balanceColumn = accountRow.get('Balance Actual') !== undefined ? 'Balance Actual' : 'Balance';
+        let currentBalance = this.parseNumber(accountRow.get(balanceColumn));
 
         if (transaction.type === 'income') {
             currentBalance -= transaction.amount;
@@ -474,16 +520,17 @@ class GoogleSheetsService {
         } else if (transaction.type === 'transfer' && transaction.toAccount) {
             currentBalance += transaction.amount;
 
-            // Revertir cuenta destino
+            // Revert destination account
             const toAccountRow = rows.find(row => row.get('ID') === transaction.toAccount);
             if (toAccountRow) {
-                const toBalance = parseFloat(toAccountRow.get('Balance Actual') || '0');
-                toAccountRow.set('Balance Actual', toBalance - transaction.amount);
+                const destBalanceColumn = toAccountRow.get('Balance Actual') !== undefined ? 'Balance Actual' : 'Balance';
+                const toBalance = this.parseNumber(toAccountRow.get(destBalanceColumn));
+                toAccountRow.set(destBalanceColumn, toBalance - transaction.amount);
                 await toAccountRow.save();
             }
         }
 
-        accountRow.set('Balance Actual', currentBalance);
+        accountRow.set(balanceColumn, currentBalance);
         await accountRow.save();
     }
 }
