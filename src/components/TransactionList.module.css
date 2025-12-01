@@ -1,0 +1,205 @@
+.transactionList {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    backdrop-filter: blur(10px);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.title {
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.addButton {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.addButton:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.transaction {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.transaction:hover {
+    border-color: var(--color-primary);
+    transform: translateX(4px);
+}
+
+.transactionLeft {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex: 1;
+}
+
+.icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-lg);
+}
+
+.icon.income {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--color-success);
+}
+
+.icon.expense {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--color-danger);
+}
+
+.icon.transfer {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--color-primary);
+}
+
+.info {
+    flex: 1;
+}
+
+.category {
+    font-weight: var(--weight-medium);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.details {
+    font-size: var(--text-sm);
+    color: var(--color-text-tertiary);
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.amount {
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    white-space: nowrap;
+}
+
+.amount.income {
+    color: var(--color-success);
+}
+
+.amount.expense {
+    color: var(--color-danger);
+}
+
+.amount.transfer {
+    color: var(--color-primary);
+}
+
+.actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-left: var(--spacing-md);
+}
+
+.actionButton {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: var(--text-sm);
+}
+
+.actionButton:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.actionButton.delete:hover {
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+}
+
+.empty {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    color: var(--color-text-tertiary);
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal);
+    padding: var(--spacing-md);
+}
+
+.modalContent {
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+    .transaction {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+
+    .transactionLeft {
+        width: 100%;
+    }
+
+    .amount {
+        font-size: var(--text-xl);
+    }
+
+    .actions {
+        width: 100%;
+        justify-content: flex-end;
+        margin-left: 0;
+    }
+}
