@@ -484,19 +484,20 @@ class GoogleSheetsService {
             const initialBalance = this.parseNumber(row.get('Balance Inicial'));
 
             calculatedBalances[accountId] = initialBalance;
-            accountIdByName[accountName] = accountId;
+            // Mapear nombre en minúsculas para búsqueda case-insensitive
+            accountIdByName[accountName.toLowerCase()] = accountId;
 
             console.log(`   Cuenta ${accountName} (ID: ${accountId}): Balance inicial = ${initialBalance}`);
         }
 
         // Procesar todas las transacciones
         for (const transaction of transactions) {
-            // Intentar encontrar la cuenta por ID o por Nombre
+            // Intentar encontrar la cuenta por ID o por Nombre (case-insensitive)
             let accountId = transaction.account;
 
-            // Si no existe el ID directamente, buscar por nombre
-            if (calculatedBalances[accountId] === undefined && accountIdByName[accountId]) {
-                accountId = accountIdByName[accountId];
+            // Si no existe el ID directamente, buscar por nombre (case-insensitive)
+            if (calculatedBalances[accountId] === undefined && accountIdByName[accountId.toLowerCase()]) {
+                accountId = accountIdByName[accountId.toLowerCase()];
             }
 
             if (calculatedBalances[accountId] === undefined) {
@@ -511,10 +512,10 @@ class GoogleSheetsService {
             } else if (transaction.type === 'transfer' && transaction.toAccount) {
                 calculatedBalances[accountId] -= transaction.amount;
 
-                // También buscar cuenta destino por ID o nombre
+                // También buscar cuenta destino por ID o nombre (case-insensitive)
                 let toAccountId = transaction.toAccount;
-                if (calculatedBalances[toAccountId] === undefined && accountIdByName[toAccountId]) {
-                    toAccountId = accountIdByName[toAccountId];
+                if (calculatedBalances[toAccountId] === undefined && accountIdByName[toAccountId.toLowerCase()]) {
+                    toAccountId = accountIdByName[toAccountId.toLowerCase()];
                 }
 
                 if (calculatedBalances[toAccountId] !== undefined) {
@@ -550,7 +551,12 @@ class GoogleSheetsService {
         const sheet = await this.getSheet('Cuentas');
         const rows = await sheet.getRows();
 
-        const accountRow = rows.find(row => row.get('ID') === transaction.account);
+        // Buscar cuenta por ID o por Nombre (case-insensitive)
+        let accountRow = rows.find(row => row.get('ID') === transaction.account);
+        if (!accountRow) {
+            accountRow = rows.find(row => row.get('Nombre')?.toLowerCase() === transaction.account.toLowerCase());
+        }
+
         if (!accountRow) {
             console.error(`❌ updateAccountBalances: Cuenta ${transaction.account} no encontrada`);
             return;
@@ -570,8 +576,12 @@ class GoogleSheetsService {
         } else if (transaction.type === 'transfer' && transaction.toAccount) {
             currentBalance -= transaction.amount;
 
-            // Update destination account
-            const toAccountRow = rows.find(row => row.get('ID') === transaction.toAccount);
+            // Update destination account - buscar por ID o Nombre (case-insensitive)
+            let toAccountRow = rows.find(row => row.get('ID') === transaction.toAccount);
+            if (!toAccountRow) {
+                toAccountRow = rows.find(row => row.get('Nombre')?.toLowerCase() === transaction.toAccount?.toLowerCase());
+            }
+
             if (toAccountRow) {
                 const destBalanceColumn = toAccountRow.get('Balance Actual') !== undefined ? 'Balance Actual' : 'Balance';
                 const toBalance = this.parseNumber(toAccountRow.get(destBalanceColumn));
@@ -593,7 +603,12 @@ class GoogleSheetsService {
         const sheet = await this.getSheet('Cuentas');
         const rows = await sheet.getRows();
 
-        const accountRow = rows.find(row => row.get('ID') === transaction.account);
+        // Buscar cuenta por ID o por Nombre (case-insensitive)
+        let accountRow = rows.find(row => row.get('ID') === transaction.account);
+        if (!accountRow) {
+            accountRow = rows.find(row => row.get('Nombre')?.toLowerCase() === transaction.account.toLowerCase());
+        }
+
         if (!accountRow) return;
 
         // Determine balance column (fallback to 'Balance')
@@ -607,8 +622,12 @@ class GoogleSheetsService {
         } else if (transaction.type === 'transfer' && transaction.toAccount) {
             currentBalance += transaction.amount;
 
-            // Revert destination account
-            const toAccountRow = rows.find(row => row.get('ID') === transaction.toAccount);
+            // Revert destination account - buscar por ID o Nombre (case-insensitive)
+            let toAccountRow = rows.find(row => row.get('ID') === transaction.toAccount);
+            if (!toAccountRow) {
+                toAccountRow = rows.find(row => row.get('Nombre')?.toLowerCase() === transaction.toAccount?.toLowerCase());
+            }
+
             if (toAccountRow) {
                 const destBalanceColumn = toAccountRow.get('Balance Actual') !== undefined ? 'Balance Actual' : 'Balance';
                 const toBalance = this.parseNumber(toAccountRow.get(destBalanceColumn));

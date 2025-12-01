@@ -21,6 +21,14 @@ export default function TransactionList() {
         }).format(amount);
     };
 
+    const formatDate = (dateString: string) => {
+        if (!dateString) return '';
+        // Crear fecha localmente para evitar problemas de zona horaria (UTC vs Local)
+        const [year, month, day] = dateString.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+        return format(date, 'dd MMM yyyy', { locale: es });
+    };
+
     const getIcon = (type: string) => {
         switch (type) {
             case 'income': return '📈';
@@ -79,7 +87,7 @@ export default function TransactionList() {
                                     <div className={styles.info}>
                                         <div className={styles.category}>{transaction.category}</div>
                                         <div className={styles.details}>
-                                            <span>{format(new Date(transaction.date), 'dd MMM yyyy', { locale: es })}</span>
+                                            <span>{formatDate(transaction.date)}</span>
                                             <span>•</span>
                                             <span>{transaction.account}</span>
                                             {transaction.detail && (
