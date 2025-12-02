@@ -64,11 +64,17 @@ export default function TransactionForm({ onClose, initialData }: TransactionFor
 
         setIsSubmitting(true);
         try {
+            // Obtener el nombre real de la cuenta en lugar de la key
+            // @ts-ignore
+            const accountName = ACCOUNTS[account]?.name || account;
+            // @ts-ignore
+            const toAccountName = type === 'transfer' ? (ACCOUNTS[toAccount]?.name || toAccount) : undefined;
+
             const transactionData = {
                 type,
                 category: type === 'transfer' ? 'Transferencia' : category,
-                account,
-                toAccount: type === 'transfer' ? toAccount : undefined,
+                account: accountName,
+                toAccount: toAccountName,
                 amount: parseFloat(amount),
                 detail,
                 date

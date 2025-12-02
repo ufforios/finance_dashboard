@@ -14,9 +14,9 @@ export default function TransactionList() {
     const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-UY', {
+        return new Intl.NumberFormat('es-PY', {
             style: 'currency',
-            currency: 'UYU',
+            currency: 'PYG',
             minimumFractionDigits: 0
         }).format(amount);
     };

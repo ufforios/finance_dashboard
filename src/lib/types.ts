@@ -22,7 +22,7 @@ export const ACCOUNT_TYPES = {
 export const ACCOUNTS = {
     cash: { name: 'Efectivo', type: ACCOUNT_TYPES.CASH },
     itau: { name: 'Itau', type: ACCOUNT_TYPES.BANK },
-    uevoV: { name: 'UevoV', type: ACCOUNT_TYPES.BANK },
+    uenoV: { name: 'UenoV', type: ACCOUNT_TYPES.BANK },
     ueno: { name: 'Ueno', type: ACCOUNT_TYPES.BANK },
     eko: { name: 'Eko', type: ACCOUNT_TYPES.BANK },
     itauPuntos: { name: 'ItauPuntos', type: ACCOUNT_TYPES.CREDIT_CARD },

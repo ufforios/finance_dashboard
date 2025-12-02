@@ -11,9 +11,9 @@ export default function AIAnalysis() {
     }
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-UY', {
+        return new Intl.NumberFormat('es-PY', {
             style: 'currency',
-            currency: 'UYU',
+            currency: 'PYG',
             minimumFractionDigits: 0
         }).format(amount);
     };
