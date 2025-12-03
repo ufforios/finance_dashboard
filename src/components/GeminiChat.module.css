@@ -274,10 +274,20 @@
         font-size: var(--text-xl);
     }
 
+    .messagesContainer {
+        /* Dar espacio para el input fijo y el nav bar */
+        margin-bottom: 140px;
+    }
+
     .inputForm {
-        padding: var(--spacing-md);
-        /* Asegurar que esté por encima si hay solapamiento */
-        position: relative;
-        z-index: 10;
+        position: fixed;
+        bottom: 70px;
+        /* Altura aprox del mobile nav + espacio */
+        left: var(--spacing-md);
+        right: var(--spacing-md);
+        z-index: 100;
+        background: var(--color-bg-card);
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+        margin: 0;
     }
 }
