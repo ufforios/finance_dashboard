@@ -253,7 +253,9 @@
 
 @media (max-width: 768px) {
     .chatContainer {
-        height: calc(100vh - 180px);
+        /* Altura total - Header (aprox 60px) - Mobile Nav (aprox 80px) - Padding extra */
+        height: calc(100vh - 160px);
+        padding-bottom: var(--spacing-md);
     }
 
     .messageContent {
@@ -270,5 +272,12 @@
 
     .welcome h2 {
         font-size: var(--text-xl);
+    }
+
+    .inputForm {
+        padding: var(--spacing-md);
+        /* Asegurar que esté por encima si hay solapamiento */
+        position: relative;
+        z-index: 10;
     }
 }

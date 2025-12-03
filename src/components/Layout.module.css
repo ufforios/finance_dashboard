@@ -108,6 +108,8 @@
     .main {
         margin-left: 0;
         padding: var(--spacing-md);
+        padding-bottom: 90px;
+        /* Space for mobile nav */
     }
 
     .mobileNav {
