@@ -3,6 +3,7 @@
 import { useState, ReactNode } from 'react';
 import Dashboard from './Dashboard';
 import TransactionList from './TransactionList';
+import TransactionForm from './TransactionForm';
 import Charts from './Charts';
 import AIAnalysis from './AIAnalysis';
 import Settings from './Settings';
@@ -18,9 +19,9 @@ export default function Layout({ children }: LayoutProps) {
 
     const navItems = [
         { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+        { id: 'add', label: 'Agregar', icon: '➕' },
         { id: 'transactions', label: 'Transacciones', icon: '💰' },
         { id: 'reports', label: 'Informes', icon: '📈' },
-        { id: 'ai', label: 'Análisis IA', icon: '🤖' },
         { id: 'settings', label: 'Configuración', icon: '⚙️' },
     ];
 
@@ -28,6 +29,12 @@ export default function Layout({ children }: LayoutProps) {
         switch (activeTab) {
             case 'dashboard':
                 return <Dashboard />;
+            case 'add':
+                return (
+                    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
+                        <TransactionForm onClose={() => setActiveTab('transactions')} />
+                    </div>
+                );
             case 'transactions':
                 return <TransactionList />;
             case 'reports':

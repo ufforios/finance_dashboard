@@ -425,11 +425,17 @@ class GoogleSheetsService {
             .filter(a => a.type === ACCOUNT_TYPES.BANK)
             .reduce((sum, a) => sum + a.balance, 0);
 
-        const creditCardDebt = Math.abs(
-            accounts
-                .filter(a => a.type === ACCOUNT_TYPES.CREDIT_CARD)
-                .reduce((sum, a) => sum + Math.min(0, a.balance), 0)
-        );
+        // Calcular deuda como: Límite - Saldo Actual (cuánto se ha usado del límite)
+        const creditCardDebt = accounts
+            .filter(a => a.type === ACCOUNT_TYPES.CREDIT_CARD)
+            .reduce((sum, a) => {
+                if (a.creditLimit) {
+                    // Deuda = Límite - Saldo Actual
+                    return sum + (a.creditLimit - a.balance);
+                }
+                // Si no tiene límite definido, usar el método anterior (balance negativo)
+                return sum + Math.abs(Math.min(0, a.balance));
+            }, 0);
 
         const accountBalances: Record<string, number> = {};
         accounts.forEach(account => {
