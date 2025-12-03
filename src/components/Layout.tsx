@@ -6,6 +6,7 @@ import TransactionList from './TransactionList';
 import TransactionForm from './TransactionForm';
 import Charts from './Charts';
 import AIAnalysis from './AIAnalysis';
+import GeminiChat from './GeminiChat';
 import Settings from './Settings';
 import styles from './Layout.module.css';
 
@@ -22,6 +23,7 @@ export default function Layout({ children }: LayoutProps) {
         { id: 'add', label: 'Agregar', icon: '➕' },
         { id: 'transactions', label: 'Transacciones', icon: '💰' },
         { id: 'reports', label: 'Informes', icon: '📈' },
+        { id: 'chat', label: 'Chat IA', icon: '🤖' },
         { id: 'settings', label: 'Configuración', icon: '⚙️' },
     ];
 
@@ -39,6 +41,8 @@ export default function Layout({ children }: LayoutProps) {
                 return <TransactionList />;
             case 'reports':
                 return <Charts />;
+            case 'chat':
+                return <GeminiChat />;
             case 'ai':
                 return <AIAnalysis />;
             case 'settings':
